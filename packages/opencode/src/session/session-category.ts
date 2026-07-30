@@ -1,0 +1,141 @@
+import { Effect, Layer, Context } from "effect"
+import { eq, and, inArray } from "drizzle-orm"
+import * as Log from "@opencode-ai/core/util/log"
+import { Database } from "@/storage/db"
+import { SessionCategoryTable, type SessionCategory } from "./session-category.sql"
+import { SessionTable } from "./session.sql"
+import type { SessionID } from "./schema"
+import { fromRow, type Info } from "./session"
+import type { ProjectID } from "../project/schema"
+
+const log = Log.create({ service: "session-category" })
+
+export const AGENT_TO_CATEGORY: Record<string, SessionCategory> = {
+  octo_ai: "dev",
+  build: "dev",
+  octo_design: "design",
+  octo_make: "prototype",
+  octo_make_plan: "subagent",
+  octo_pattern: "prototype",
+  octo_pattern_intent: "prototype",
+  octo_pattern_module: "prototype",
+  octo_insight: "analysis",
+  octo_studio: "creative",
+  plan: "planning",
+  subagent: "subagent",
+}
+
+export const CATEGORY_VALUES: ReadonlySet<string> = new Set<string>(Object.values(AGENT_TO_CATEGORY))
+
+export function agentToCategory(agentName: string): SessionCategory {
+  return AGENT_TO_CATEGORY[agentName] ?? "dev"
+}
+
+export interface Interface {
+  readonly get: (sessionID: SessionID) => Effect.Effect<SessionCategory | undefined, never>
+  readonly set: (sessionID: SessionID, category: SessionCategory) => Effect.Effect<void, never>
+  readonly categorize: (sessionID: SessionID, agentName: string) => Effect.Effect<void, never>
+  readonly listByCategory: (
+    category: SessionCategory,
+    input?: { projectID?: ProjectID; limit?: number },
+  ) => Effect.Effect<Info[], never>
+  readonly listCategories: (sessionIDs: SessionID[]) => Effect.Effect<Map<SessionID, SessionCategory>, never>
+}
+
+export class Service extends Context.Service<Service, Interface>()("@opencode/SessionCategory") {}
+
+export const layer = Layer.effect(
+  Service,
+  Effect.sync(() => {
+    return Service.of({
+      get: (sessionID: SessionID) =>
+        Effect.sync(() => {
+          const row = Database.use((db) =>
+            db.select().from(SessionCategoryTable).where(eq(SessionCategoryTable.session_id, sessionID)).get(),
+          )
+          return row?.category
+        }),
+
+      set: (sessionID: SessionID, category: SessionCategory) =>
+        Effect.sync(() => {
+          const now = Date.now()
+          Database.use((db) =>
+            db
+              .insert(SessionCategoryTable)
+              .values({ session_id: sessionID, category, time_created: now, time_updated: now })
+              .onConflictDoUpdate({
+                target: SessionCategoryTable.session_id,
+                set: { category, time_updated: now },
+              })
+              .run(),
+          )
+        }),
+
+      categorize: (sessionID: SessionID, agentName: string) =>
+        Effect.sync(() => {
+          const category = agentToCategory(agentName)
+          log.debug("categorizing session", { sessionID, agentName, category })
+          const now = Date.now()
+          Database.use((db) =>
+            db
+              .insert(SessionCategoryTable)
+              .values({ session_id: sessionID, category, time_created: now, time_updated: now })
+              .onConflictDoNothing({ target: SessionCategoryTable.session_id })
+              .run(),
+          )
+        }),
+
+      listByCategory: (category: SessionCategory, input?: { projectID?: ProjectID; limit?: number }) =>
+        Effect.sync(() => {
+          const limit = input?.limit ?? 100
+          const conditions = [eq(SessionCategoryTable.category, category)]
+
+          if (input?.projectID) {
+            conditions.push(eq(SessionTable.project_id, input.projectID))
+          }
+
+          const rows = Database.use((db) =>
+            db
+              .select({ session: SessionTable })
+              .from(SessionCategoryTable)
+              .innerJoin(SessionTable, eq(SessionCategoryTable.session_id, SessionTable.id))
+              .where(and(...conditions))
+              .limit(limit)
+              .all(),
+          )
+
+          return (rows ?? []).flatMap((r) => {
+            try {
+              return [fromRow(r.session, category)]
+            } catch (err) {
+              log.error("session-list-by-category:skip-bad-row", { sessionID: r.session.id, error: String(err) })
+              return []
+            }
+          })
+        }),
+
+      listCategories: (sessionIDs: SessionID[]) =>
+        Effect.sync(() => {
+          if (sessionIDs.length === 0) return new Map<SessionID, SessionCategory>()
+
+          const rows = Database.use((db) =>
+            db
+              .select()
+              .from(SessionCategoryTable)
+              .where(inArray(SessionCategoryTable.session_id, sessionIDs))
+              .all(),
+          )
+
+          const result = new Map<SessionID, SessionCategory>()
+          for (const row of rows ?? []) {
+            result.set(row.session_id, row.category)
+          }
+          return result
+        }),
+    })
+  }),
+)
+
+export const defaultLayer = layer
+
+export * as SessionCategoryService from "./session-category"

@@ -1,0 +1,73 @@
+[data-dock-surface="shell"] [data-action="prompt-submit"] {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-image: url(/IconSend-blue.svg);
+    background-size: 48.4px auto;
+    background-position: -8px -3.5px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
+[data-dock-surface="shell"] [data-action="prompt-submit"]:disabled {
+  opacity: 0.6;
+}
+
+[data-dock-surface="shell"] [data-action="prompt-submit"][data-icon="stop"] {
+  background-image: url(/pauseIcon.svg);
+  opacity: 1;
+}
+
+[data-dock-surface="shell"] [data-action="prompt-submit"] [data-slot="icon-svg"] {
+  display: none;
+}
+
+[data-component="session-prompt-dock"] {
+  padding-bottom: 24px;
+}
+
+[data-state="empty-session"] [data-component="session-prompt-dock"] {
+  padding-bottom: 0;
+}
+
+[data-component="session-prompt-dock"] > .w-full.px-3 {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+[data-dock-surface="shell"] {
+  border: 1px solid transparent;
+  min-height: 140px;
+  padding: 16px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(var(--surface-raised-stronger-non-alpha), var(--surface-raised-stronger-non-alpha)) padding-box, linear-gradient(135deg, rgba(246, 97, 23, 0.7) 1%, rgba(95, 45, 255, 0.7) 8%, rgba(61, 93, 255, 0.7) 22%, rgba(104, 138, 255, 0.7) 43%, rgba(28, 171, 111, 0.7) 54%, rgba(61, 93, 255, 0.7) 87%, rgba(206, 7, 232, 0.7) 92%) border-box;
+  box-shadow:
+    0 0 5px rgba(0, 0, 0, 0.15),
+    0 0 10px rgba(74, 81, 255, 0.3),
+    0 0 20px rgba(89, 74, 255, 0.2);
+}
+
+.relative.bg-background-base.size-full [data-component="session-turn"] [data-component="user-message"] {
+  background: none;
+}
+
+[data-dock-surface="shell"] [data-component="prompt-model-control"] [data-action="prompt-model"] {
+  background-color: #f3f3f3 !important;
+  border-radius: 42px !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+  padding: 4px 8px !important;
+  height: auto !important;
+  color: #191919 !important;
+  transition: background-color 0.15s ease !important;
+}
+
+[data-dock-surface="shell"] [data-component="prompt-model-control"] [data-action="prompt-model"]:hover {
+  background-color: #e8e8e8 !important;
+}
+
+[data-dock-surface="shell"] [data-component="prompt-model-control"] [data-action="prompt-model"]:active {
+  background-color: #dedede !important;
+}

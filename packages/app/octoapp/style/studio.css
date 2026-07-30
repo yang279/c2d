@@ -1,0 +1,169 @@
+/* 1. Logo -- StudioMark in empty state -> logo.svg (80x80) */
+.studio-center .min-h-full.pb-28 > :first-child {
+  width: 80px !important;
+  height: 80px !important;
+  background: url('/studio/logo.svg') center/contain no-repeat !important;
+  border-radius: 0 !important;
+  filter: none !important;
+}
+
+/* 2. StudioIntro capability list -- first 4 items -> IconXxx.svg (26x26) */
+.studio-center .min-h-full.pb-28 > :nth-child(4) > :nth-child(1) > :first-child,
+.studio-center .min-h-full.pb-28 > :nth-child(4) > :nth-child(2) > :first-child,
+.studio-center .min-h-full.pb-28 > :nth-child(4) > :nth-child(3) > :first-child,
+.studio-center .min-h-full.pb-28 > :nth-child(4) > :nth-child(4) > :first-child {
+  font-size: 0;
+  width: 42px;
+  height: 42px;
+}
+.studio-center .min-h-full.pb-28 > :nth-child(4) > :nth-child(1) > :first-child { background: url('/studio/IconImg.svg')    center/26px 26px no-repeat; }
+.studio-center .min-h-full.pb-28 > :nth-child(4) > :nth-child(2) > :first-child { background: url('/studio/IconVideo.svg')  center/26px 26px no-repeat; }
+.studio-center .min-h-full.pb-28 > :nth-child(4) > :nth-child(3) > :first-child { background: url('/studio/IconHD.svg')     center/26px 26px no-repeat; }
+.studio-center .min-h-full.pb-28 > :nth-child(4) > :nth-child(4) > :first-child { background: url('/studio/IconRedraw.svg') center/26px 26px no-repeat; }
+
+/* 3. CapabilityMenu dropdown -- 7 items -> imgCreate1~7.svg (20x20) */
+.studio-menu > button > span:first-child {
+  font-size: 0;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
+.studio-menu > button {
+  height: auto;
+  padding: 7px 8px;
+  font-size: 14px;
+  line-height: 22px;
+  gap: 4px;
+}
+.studio-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.studio-menu > button:nth-of-type(1) > span:first-child { background: url('/studio/imgCreate1.svg') center/contain no-repeat; }
+.studio-menu > button:nth-of-type(2) > span:first-child { background: url('/studio/imgCreate2.svg') center/contain no-repeat; }
+.studio-menu > button:nth-of-type(3) > span:first-child { background: url('/studio/imgCreate3.svg') center/contain no-repeat; }
+.studio-menu > button:nth-of-type(4) > span:first-child { background: url('/studio/imgCreate4.svg') center/contain no-repeat; }
+.studio-menu > button:nth-of-type(5) > span:first-child { background: url('/studio/imgCreate5.svg') center/contain no-repeat; }
+.studio-menu > button:nth-of-type(6) > span:first-child { background: url('/studio/imgCreate6.svg') center/contain no-repeat; }
+.studio-menu > button:nth-of-type(7) > span:first-child { background: url('/studio/imgCreate7.svg') center/contain no-repeat; }
+
+/* 4. Composer upload button (+ -> IconAdd.svg, 52x64) */
+.studio-composer .flex.gap-4 > :first-child {
+  font-size: 0;
+  background: url('/studio/IconAdd.svg') center/contain no-repeat, transparent !important;
+  border: none;
+}
+
+/* 5. Composer send button (>/... -> IconSend-pink.svg, 57x58) */
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(6) {
+  font-size: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(6)::before {
+  content: '';
+  display: inline-block;
+  width: 57px;
+  height: 58px;
+  background: url(/studio/IconSend-pink.svg) center 5px / 57px 58px no-repeat !important;
+}
+
+/* 6. ToolButton dropdown arrows (\2316 -> IconDown.svg, 16x16) */
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(1) > span:last-child,
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(2) > span:last-child,
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(3) > span:last-child {
+  font-size: 0;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: url('/studio/IconDown.svg') center/contain no-repeat;
+}
+
+/* 7. IconTool buttons (\231B/\25A3 -> IconParameter/IconMaterial, 16x16) */
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(4) {
+  font-size: 0;
+  background: url('/studio/IconParameter.svg') center/ 16px 16px no-repeat, #f2f3f5 !important;
+}
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(5) {
+  font-size: 0;
+  background: url('/studio/IconMaterial.svg') center/ 16px 16px no-repeat, #f2f3f5 !important;
+}
+
+/* 8. Canvas idle state (animated floating dots, 210x210) */
+.studio-canvas > div.h-full.flex.flex-col.items-center.justify-center.text-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 9. StyleMenu icons -- 渐变色块 → studioModel1~11.png */
+.studio-menu .grid > button > span:first-child {
+  font-size: 0;
+  width: 42px;
+  height: 42px;
+  background: transparent !important;
+}
+/* 10. StyleMenu 弹框样式覆盖 */
+.studio-menu > div:first-child {
+  font-size: 14px;
+  line-height: 22px;
+  color: #191919;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.studio-menu .grid {
+  gap: 8px;
+}
+
+.studio-menu .grid > button {
+  padding: 9px 8px;
+  height: auto;
+}
+
+.studio-menu .grid > button > span:nth-child(2) {
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.studio-menu .grid > button > span.ml-auto {
+  font-size: 0;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  background: url('/studio/checkmark.svg') center/contain no-repeat;
+}
+
+/* 11. 工具栏下拉按钮文字不换行，超出省略 */
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(1),
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(2),
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(3) {
+  max-width: 96px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(4),
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(5),
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(6) {
+  flex-shrink: 0;
+}
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(1) > span:first-child,
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(2) > span:first-child,
+.studio-composer .flex.items-center.gap-2.mt-5 > :nth-child(3) > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studio-page .studio-left a[href] {
+  padding-right: 26px;
+}
+
+.studio-page .studio-left a[href] span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+

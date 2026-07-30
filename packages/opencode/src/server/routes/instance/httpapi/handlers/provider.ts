@@ -1,0 +1,96 @@
+import { ProviderAuth } from "@/provider/auth"
+import { Provider } from "@/provider/provider"
+import { ProviderID } from "@/provider/schema"
+import { Effect, Schema } from "effect"
+import { HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
+import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi"
+import { InstanceHttpApi } from "../api"
+import { configureModelsApiHeaders } from "@/plugin/model-headers"
+
+export const providerHandlers = HttpApiBuilder.group(InstanceHttpApi, "provider", (handlers) =>
+  Effect.gen(function* () {
+    const provider = yield* Provider.Service
+    const svc = yield* ProviderAuth.Service
+
+    const list = Effect.fn("ProviderHttpApi.list")(function* () {
+      configureModelsApiHeaders((yield* HttpServerRequest.HttpServerRequest).headers)
+      const connected = yield* provider.list()
+      const hasAuth = (p: Provider.Info) =>
+        p.id === "w3" ||
+        Boolean(p.key) ||
+        p.source === "env" ||
+        p.source === "api" ||
+        Boolean((p.options as Record<string, unknown>)?.apiKey)
+      // 诊断日志: opencode/bpit/bpit-beta 的 hasAuth 各分支分解
+      for (const p of Object.values(connected)) {
+        if (p.id === "opencode" || p.id === "bpit" || p.id === "bpit-beta") {
+          console.log("[HttpApi.provider.list] hasAuth breakdown", {
+            id: p.id,
+            key: Boolean(p.key),
+            source: p.source,
+            optionsApiKey: Boolean((p.options as Record<string, unknown>)?.apiKey),
+            optionsKeys: Object.keys(p.options ?? {}),
+            modelsCount: Object.keys(p.models).length,
+            result: hasAuth(p),
+            t: Date.now(),
+          })
+        }
+      }
+      return {
+        all: Object.values(connected),
+        default: Provider.defaultModelIDs(connected),
+        connected: Object.keys(connected).filter((id) => hasAuth(connected[id as keyof typeof connected])),
+      }
+    })
+
+    const auth = Effect.fn("ProviderHttpApi.auth")(function* () {
+      return yield* svc.methods()
+    })
+
+    const authorize = Effect.fn("ProviderHttpApi.authorize")(function* (ctx: {
+      params: { providerID: ProviderID }
+      payload: ProviderAuth.AuthorizeInput
+    }) {
+      return yield* svc
+        .authorize({
+          providerID: ctx.params.providerID,
+          method: ctx.payload.method,
+          inputs: ctx.payload.inputs,
+        })
+        .pipe(Effect.catch(() => Effect.fail(new HttpApiError.BadRequest({}))))
+    })
+
+    const authorizeRaw = Effect.fn("ProviderHttpApi.authorizeRaw")(function* (ctx: {
+      params: { providerID: ProviderID }
+      request: HttpServerRequest.HttpServerRequest
+    }) {
+      const body = yield* Effect.orDie(ctx.request.text)
+      const payload = yield* Schema.decodeUnknownEffect(Schema.fromJsonString(ProviderAuth.AuthorizeInput))(body).pipe(
+        Effect.mapError(() => new HttpApiError.BadRequest({})),
+      )
+      const result = yield* authorize({ params: ctx.params, payload })
+      if (result === undefined) return HttpServerResponse.empty({ status: 200 })
+      return HttpServerResponse.jsonUnsafe(result)
+    })
+
+    const callback = Effect.fn("ProviderHttpApi.callback")(function* (ctx: {
+      params: { providerID: ProviderID }
+      payload: ProviderAuth.CallbackInput
+    }) {
+      yield* svc
+        .callback({
+          providerID: ctx.params.providerID,
+          method: ctx.payload.method,
+          code: ctx.payload.code,
+        })
+        .pipe(Effect.catch(() => Effect.fail(new HttpApiError.BadRequest({}))))
+      return true
+    })
+
+    return handlers
+      .handle("list", list)
+      .handle("auth", auth)
+      .handleRaw("authorize", authorizeRaw)
+      .handle("callback", callback)
+  }),
+)

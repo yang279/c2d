@@ -1,0 +1,44 @@
+.DS_Store
+node_modules
+.worktrees
+.sst
+.env
+.env.*
+!.env.example
+.idea
+.vscode
+.codex
+.claude
+*~
+playground
+tmp
+dist
+ts-dist
+.turbo
+**/.serena
+.serena/
+/result
+refs
+Session.vim
+/opencode.json
+a.out
+target
+.scripts
+.direnv/
+
+# Vditor 运行时资源(由 vite 插件从 node_modules/vditor/dist 拷贝,见 packages/app/vite.js)
+# 本地化离线用,体积大,不入库
+packages/app/public/vendor/
+
+# Local dev files
+opencode-dev
+UPCOMING_CHANGELOG.md
+logs/
+*.bun-build
+CLAUDE.md
+tsconfig.tsbuildinfo
+
+bun.lock
+.bunfig.toml
+
+analysis/

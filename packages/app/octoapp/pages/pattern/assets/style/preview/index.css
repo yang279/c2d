@@ -1,0 +1,82 @@
+@import "./ContextMenu.css";
+@import "./PropertyEditorPopup.css";
+@import "./annotation.css";
+
+/* ==========================================================================
+   1. 基础容器与大页面布局
+   ========================================================================== */
+.preview-container {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: #f3f4f6; /* 主背景灰色 */
+  box-sizing: border-box;
+}
+
+/* 修改选中区域弹窗 — 定位在 preview 容器内 */
+.picker-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.picker-dialog {
+  position: absolute;
+  bottom: 10%;
+  z-index: 100;
+  background: #F9F9F9;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  width: 400px;
+  height: 220px;
+  box-sizing: border-box;
+  max-width: 90%;
+  pointer-events: auto;
+}
+
+/* 编辑态遮罩：透明矩形 + 巨大 box-shadow 向外铺半透明黑，露出选中元素与蓝框 */
+.picker-mask {
+  position: absolute;
+  z-index: 50;
+  pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+  border: 2px solid #007bff;
+  background: rgba(0, 123, 255, 0.1);
+  box-sizing: border-box;
+}
+
+/* 编辑态点击捕获层：全屏透明，z-index 在遮罩(50)之下、canvas 之上。
+   单独存在是因为遮罩的黑色用 box-shadow 画，而 box-shadow 不参与命中测试，
+   必须靠这个独立层来收点击，点黑色区域 / 元素洞 都能触发关闭。 */
+.picker-mask-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 49;
+  pointer-events: auto;
+  background: transparent;
+}
+
+.picker-header {
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  padding-bottom: 0px;
+  cursor: grab;
+  user-select: none;
+}
+
+.picker-header:active {
+  cursor: grabbing;
+}
+
+.picker-body {
+  padding: 12px 16px;
+}
