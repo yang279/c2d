@@ -84,7 +84,7 @@ export async function autoSaveArtifact(
   const sep = projectDir.includes("\\") ? "\\" : "/"
   const baseName = hasExtension(card.title, card.type) ? card.title : card.title + getExtension(card.type)
   const filename = sanitizeFilename(baseName)
-  const filePath = [projectDir, ...ARTIFACTS_SUBDIR.split("/"), sessionId, "outputs", filename].join(sep)
+  const filePath = [projectDir, ...ARTIFACTS_SUBDIR.split("/"), sessionId, "d2c", filename].join(sep)
 
   // 检查文件是否已存在，不覆盖用户编辑的内容
   const existing = await api.readFileBuffer(filePath)

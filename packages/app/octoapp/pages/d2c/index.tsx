@@ -84,6 +84,7 @@ import { scanDesignPlanFromMessages, isPlanConfirmed, isPlanIntentResolved } fro
 import { scanStrategyFields, EMPTY_STRATEGY_FORM, type StrategyFormData } from "./utils/strategy-form-scanner"
 import { useD2cCommands } from "./use-make-commands"
 import { getDesktopApi } from "./lib/electron-api"
+import { D2cFileApiProvider } from "./context/d2c-file-api"
 
 export default function D2cPage() {
   const projectDir = useProjectDir({ mode: "project" })
@@ -106,9 +107,11 @@ export default function D2cPage() {
         <SDKProvider directory={() => dir}>
           <SyncProvider>
             <LocalProvider>
-              <Suspense fallback={<div class="size-full bg-background-base" />}>
-                <D2cContent />
-              </Suspense>
+              <D2cFileApiProvider>
+                <Suspense fallback={<div class="size-full bg-background-base" />}>
+                  <D2cContent />
+                </Suspense>
+              </D2cFileApiProvider>
             </LocalProvider>
           </SyncProvider>
         </SDKProvider>
