@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount, Show, type JSX } from "solid-js"
+import { createSignal, onMount, onCleanup, Show, type JSX } from "solid-js"
 
 export interface WebviewPanelRef {
   postMessage: (data: unknown) => void
@@ -12,23 +12,29 @@ interface WebviewPanelProps {
   ref?: (el: WebviewPanelRef) => void
 }
 
+const IPC_CHANNEL = "d2c-bridge"
+
 export function WebviewPanel(props: WebviewPanelProps) {
-  let iframeRef: HTMLIFrameElement | undefined
+  let webviewEl: HTMLElement | undefined
   const [loading, setLoading] = createSignal(true)
 
-  function handleMessage(e: MessageEvent) {
-    if (e.source !== iframeRef?.contentWindow) return
-    props.onMessage?.(e.data)
-  }
-
   onMount(() => {
-    window.addEventListener("message", handleMessage)
-    onCleanup(() => window.removeEventListener("message", handleMessage))
+    if (!webviewEl) return
+
+    webviewEl.addEventListener("ipc-message", (e: Event) => {
+      const evt = e as unknown as { channel: string; args: unknown[] }
+      if (evt.channel !== IPC_CHANNEL) return
+      props.onMessage?.(evt.args[0])
+    })
+
+    webviewEl.addEventListener("did-finish-load", () => {
+      setLoading(false)
+    })
   })
 
   const ref: WebviewPanelRef = {
     postMessage: (data: unknown) => {
-      iframeRef?.contentWindow?.postMessage(data, "*")
+      ;(webviewEl as any)?.send?.(IPC_CHANNEL, data)
     },
   }
 
@@ -44,13 +50,11 @@ export function WebviewPanel(props: WebviewPanelProps) {
           <div class="octo-spinner" />
         </div>
       </Show>
-      <iframe
-        ref={iframeRef!}
+      <webview
+        ref={webviewEl!}
         src={props.url || "about:blank"}
         style={{ width: "100%", height: "100%", border: "none" }}
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-        allow="clipboard-read; clipboard-write"
-        onLoad={() => setLoading(false)}
+        allowpopups
       />
     </div>
   )

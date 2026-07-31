@@ -1060,7 +1060,7 @@ const sessionMessagesLoaded = createMemo(() => {
     overlay.addEventListener("mouseup", onUp)
   }
 
-  const [webviewUrl, setWebviewUrl] = createSignal("about:blank")
+  const [webviewUrl, setWebviewUrl] = createSignal("https://www.baidu.com")
   let webviewPanelRef: WebviewPanelRef | undefined
 
   function handleWebviewMessage(data: unknown) {

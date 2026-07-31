@@ -17,16 +17,4 @@ export function postToWebview(ref: WebviewPanelRef | null | undefined, data: D2c
 
 export type WebviewMessageHandler = (msg: WebviewToD2cMessage) => void
 
-export function createWebviewListener(
-  iframeRef: () => HTMLIFrameElement | undefined,
-  handler: WebviewMessageHandler,
-) {
-  function onMessage(e: MessageEvent) {
-    const iframe = iframeRef()
-    if (!iframe || e.source !== iframe.contentWindow) return
-    handler(e.data as WebviewToD2cMessage)
-  }
-
-  window.addEventListener("message", onMessage)
-  return () => window.removeEventListener("message", onMessage)
-}
+export const IPC_CHANNEL = "d2c-bridge"
