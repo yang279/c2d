@@ -16,7 +16,7 @@ import { TaskList } from "@/components/task-list"
 // jk-j60099994-replace-with-titlebar-simple-1-end
 
 
-type TabType = "chat" | "make" | "cowork" | "studio" | "pattern"
+type TabType = "chat" | "make" | "c2d" | "cowork" | "studio" | "pattern"
 
 const TAB_ITEMS: { key: TabType; label: string }[] = [
   { key: "chat", label: "Chat" },
@@ -24,6 +24,7 @@ const TAB_ITEMS: { key: TabType; label: string }[] = [
   { key: "make", label: "Design" },
   { key: "pattern", label: "Prototype" },
   { key: "studio", label: "Studio" },
+  { key: "c2d", label: "C2D" },
 ]
 
 type TauriDesktopWindow = {
@@ -95,10 +96,11 @@ export function TitlebarSimple() {
     const path = location.pathname
     if (path === "/cowork" || path.startsWith("/insight")) return "cowork"
     if (path === "/" || path === "/make" || path.startsWith("/make/")) return "make"
+    if (path === "/c2d" || path.startsWith("/c2d/")) return "c2d"
     if (path === "/pattern" || path.startsWith("/pattern/")) return "pattern"
     if (path === "/skills") {
       const source = layout.sidebarSource.get()
-      return source === "make" ? "make" : source === "pattern" ? "pattern" : "cowork"
+      return source === "make" ? "make" : source === "c2d" ? "c2d" : source === "pattern" ? "pattern" : "cowork"
     }
     const dirMatch = path.match(/^\/[^/]+/)
     if (!dirMatch) return undefined
@@ -121,6 +123,8 @@ export function TitlebarSimple() {
     if (/^\/[^/]+\/chat\/?$/.test(path)) return true
     // make: /make (没有 session ID)
     if (path === "/make") return true
+    // c2d: /c2d (没有 session ID)
+    if (path === "/c2d") return true
     // insight/cowork: /insight (没有 session ID)
     if (path === "/insight") return true
     // pattern: /pattern (没有 session ID)
@@ -147,6 +151,10 @@ export function TitlebarSimple() {
       }
       if (tab === "make") {
         navigate("/make")
+        return
+      }
+      if (tab === "c2d") {
+        navigate("/c2d")
         return
       }
       if (tab === "pattern") {
@@ -186,6 +194,21 @@ export function TitlebarSimple() {
         }
       } else {
         navigate("/make")
+      }
+      return
+    }
+
+    if (tab === "c2d") {
+      const lastDir = server.projects.last()
+      if (lastDir) {
+        const sessionId = layout.lastSessionPerTab.c2d(lastDir)
+        if (sessionId) {
+          navigate(`/c2d/${sessionId}`)
+        } else {
+          navigate("/c2d")
+        }
+      } else {
+        navigate("/c2d")
       }
       return
     }

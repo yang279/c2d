@@ -21,6 +21,7 @@ const TABS: TabDef[] = [
   { label: "Cowork", href: "/insight", icon: "/IconCowork.svg" },
   { label: "Make", href: "/make", icon: "/makeTab.svg" },
   { label: "Studio", href: "/studio", icon: "/IconStudio.svg" },
+  { label: "C2D", href: "/c2d", icon: "/makeTab.svg" },
 ]
 
 const TRAFFIC_LIGHT_INSET = 80
@@ -42,6 +43,7 @@ export function OctoTopbar(): JSX.Element {
     if (p === "/" || p.startsWith("/chat")) return "/chat"
     if (p.startsWith("/studio")) return "/studio"
     if (p.startsWith("/make")) return "/make"
+    if (p.startsWith("/c2d")) return "/c2d"
     return "/insight"
   }
 
@@ -124,6 +126,18 @@ export function OctoTopbar(): JSX.Element {
                         navigate(`/${dir}/studio/${sessionId}`)
                       } else {
                         navigate(`/${dir}/studio`)
+                      }
+                    } else if (tab.href === "/c2d") {
+                      const lastDir = server.projects.last()
+                      if (lastDir) {
+                        const sessionId = layout.lastSessionPerTab.c2d(lastDir)
+                        if (sessionId) {
+                          navigate(`/c2d/${sessionId}`)
+                        } else {
+                          navigate("/c2d")
+                        }
+                      } else {
+                        navigate("/c2d")
                       }
                     }
                   }}

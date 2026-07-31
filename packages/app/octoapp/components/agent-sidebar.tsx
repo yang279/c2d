@@ -49,7 +49,7 @@ export type AgentSidebarProps = {
   onSettingsClick?: () => void
 
   // ── Nav (optional) ──
-  sidebarSourceKey?: "cowork" | "make"
+  sidebarSourceKey?: "cowork" | "make" | "c2d"
   /** Custom handler for skill button click. If provided, overrides default navigation to /skills. */
   onSkillClick?: () => void
   /** When true, highlights the skill button (for inline panel mode). */

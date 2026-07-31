@@ -14,6 +14,8 @@ import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
 import PROMPT_OCTO_INSIGHT from "./prompt/octo_insight.txt"
 import PROMPT_OCTO_MAKE from "./prompt/octo_make.txt"
+import PROMPT_OCTO_C2D from "./prompt/octo_c2d.txt"
+import PROMPT_OCTO_C2D_PLAN from "./prompt/octo_c2d_plan.txt"
 import PROMPT_OCTO_DESIGN from "./prompt/octo_design.txt"
 import PROMPT_OCTO_STUDIO from "./prompt/octo_studio.txt"
 import PROMPT_OCTO_PATTERN_INTENT from "./prompt/octo_pattern_intent.txt"
@@ -311,6 +313,51 @@ export const layer = Layer.effect(
             native: false,
             skills: ["html-prototype"],
             mcp: ["prototype-dev"],
+          },
+          octo_c2d: {
+            name: "octo_c2d",
+            description:
+              "Canvas to Design specialist. Converts design canvas/visual input into high-fidelity interactive HTML prototypes using Tailwind CSS.",
+            prompt: PROMPT_OCTO_C2D,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                write: "allow",
+                edit: "ask",
+                apply_patch: "deny",
+                todowrite: "deny",
+                websearch: "deny",
+                jimeng_image_generate: "deny",
+                internel_image_generate: "deny",
+                lsp: "deny",
+                plan_exit: "deny",
+                question: "deny",
+              }),
+              user,
+            ),
+            options: {},
+            mode: "primary",
+            native: false,
+            skills: [],
+            mcp: [],
+          },
+          octo_c2d_plan: {
+            name: "octo_c2d_plan",
+            description: "C2D 设计规划专家。根据用户需求产出一份结构化设计策略文档，包含设计需求、洞察研究、设计资产等模块。",
+            prompt: PROMPT_OCTO_C2D_PLAN,
+            permission: Permission.merge(
+              defaults,
+              Permission.fromConfig({
+                "*": "deny",
+                read: "ask",
+                websearch: "allow",
+              }),
+              user,
+            ),
+            options: {},
+            mode: "primary",
+            native: true,
+            hidden: true,
           },
           octo_make_plan: {
             name: "octo_make_plan",

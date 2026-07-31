@@ -16,6 +16,8 @@ export const AGENT_TO_CATEGORY: Record<string, SessionCategory> = {
   octo_design: "design",
   octo_make: "prototype",
   octo_make_plan: "subagent",
+  octo_c2d: "prototype",
+  octo_c2d_plan: "subagent",
   octo_pattern: "prototype",
   octo_pattern_intent: "prototype",
   octo_pattern_module: "prototype",

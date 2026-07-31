@@ -57,6 +57,7 @@ import { insightDevRoutes } from "@/pages/insight/__dev/routes"
 import { installConsoleObjectSerializer } from "@/pages/insight/lib/console-serialize"
 if (!import.meta.env.DEV) installConsoleObjectSerializer()
 import { MakeSidebar } from "@/pages/make/sidebar"
+import { C2dSidebar } from "@/pages/c2d/sidebar"
 import { PatternSidebar } from "@/pages/pattern/modules/sidebar/sidebar"
 import { InsightSidebar } from "@/pages/insight/sidebar"
 import { InsightQueueRunner } from "@/pages/insight/queue-runner"
@@ -76,6 +77,7 @@ import { persisted, Persist } from "@/utils/persist"
 const ChatPage = lazy(() => import("@/pages/chat"))
 const InsightPage = lazy(() => import("@/pages/insight"))
 const MakePage = lazy(() => import("@/pages/make"))
+const C2dPage = lazy(() => import("@/pages/c2d"))
 const PatternPage = lazy(() => import("@/pages/pattern"))
 const SkillsPage = lazy(() => import("@/pages/skills"))
 const StudioPage = lazy(() => import("@/pages/studio/index"))
@@ -284,6 +286,14 @@ function MakeSidebarLayout(props: ParentProps) {
   )
 }
 
+function C2dSidebarLayout(props: ParentProps) {
+  return (
+    <MakeLayoutProvider>
+      <C2dSidebarArea>{props.children}</C2dSidebarArea>
+    </MakeLayoutProvider>
+  )
+}
+
 function MakeSidebarArea(props: ParentProps) {
   const ml = useMakeLayout()
   const layout = useLayout()
@@ -352,6 +362,74 @@ function MakeSidebarArea(props: ParentProps) {
   )
 }
 
+function C2dSidebarArea(props: ParentProps) {
+  const ml = useMakeLayout()
+  const layout = useLayout()
+  const focusMode = layout.focusMode.get
+
+  function handleResize(e: MouseEvent) {
+    if (ml.leftCollapsed()) return
+    e.preventDefault()
+    const startX = e.clientX
+    const startW = ml.leftW()
+    document.body.style.cursor = "col-resize"
+    document.body.style.userSelect = "none"
+    const onMove = (ev: MouseEvent) => ml.setLeftW(startW + ev.clientX - startX)
+    const onUp = () => {
+      document.body.style.cursor = ""
+      document.body.style.userSelect = ""
+      document.removeEventListener("mousemove", onMove)
+      document.removeEventListener("mouseup", onUp)
+    }
+    document.addEventListener("mousemove", onMove)
+    document.addEventListener("mouseup", onUp)
+  }
+
+  return (
+    <>
+      <style>{`
+        .make-sidebar { transition: transform 200ms ease; will-change: transform; }
+        .make-sidebar.is-collapsed { position: fixed; top: 48px; bottom: 0; left: 0; height: auto; z-index: 32; transform: translateX(-100%); }
+        body.make-left-drawer-open .make-sidebar.is-collapsed { transform: translateX(0); box-shadow: 11px 0 20px 0 rgba(0,0,0,0.08); }
+        .make-sidebar-overlay { display: none; position: fixed; inset: 0; z-index: 30; }
+        body.make-left-drawer-open .make-sidebar-overlay { display: block; }
+        .make-sidebar-resize { position: absolute; top: 0; bottom: 0; width: 8px; cursor: col-resize; z-index: 10; }
+        .make-right-panel { transition: transform 200ms ease; will-change: transform; }
+        .make-right-panel.is-collapsed { position: fixed; top: 48px; bottom: 0; right: 0; height: auto; width: 650px; max-width: calc(100vw - 24px); z-index: 32; transform: translateX(100%); background: #fff; }
+        body.make-right-drawer-open .make-right-panel.is-collapsed { transform: translateX(0); box-shadow: -11px 0 20px 0 rgba(0,0,0,0.08); }
+        .make-right-overlay { display: none; position: fixed; inset: 0; z-index: 30; }
+        body.make-right-drawer-open .make-right-overlay { display: block; }
+        .make-icon-btn { color: #777; background: transparent; cursor: pointer; }
+        .make-icon-btn [data-component="icon"] { color: #777; transition: color 100ms ease; }
+        .make-icon-btn:hover { color: #0a59f7; }
+        .make-icon-btn:hover [data-component="icon"] { color: #0a59f7; }
+        .make-icon-btn[data-expanded], .make-icon-btn[data-state="open"] { color: #0a59f7; }
+        .make-icon-btn[data-expanded] [data-component="icon"], .make-icon-btn[data-state="open"] [data-component="icon"] { color: #0a59f7; }
+        .make-chat-folded .scroll-view__viewport { max-width: 824px; margin-left: auto; margin-right: auto; }
+        .make-chat-folded .make-composer { max-width: 800px; margin-left: auto; margin-right: auto; }
+      `}</style>
+      <div
+        data-make-area="sidebar"
+        class="flex flex-1 min-h-0 min-w-0 overflow-hidden relative"
+        style={{ "--sidebar-width": `${ml.leftW()}px` }}
+      >
+        <div class="make-sidebar-overlay" onClick={() => ml.toggleLeftDrawer()} />
+        <div
+          class="make-sidebar h-full shrink-0 flex flex-col overflow-hidden"
+          classList={{ "is-collapsed": ml.leftCollapsed() || focusMode() }}
+          style={{ "border-right": "1px solid var(--border-weak-base)", background: "linear-gradient(166deg, #ffffff 0%, #fdfeff 48%, #e9f5ff 99%)" }}
+        >
+          <C2dSidebar />
+        </div>
+        <Show when={!ml.leftCollapsed() && !focusMode()}>
+          <div class="make-sidebar-resize" style={{ left: `${ml.leftW() - 4}px` }} onMouseDown={handleResize} />
+        </Show>
+        <div class="flex flex-col flex-1 min-w-0 overflow-hidden">{props.children}</div>
+      </div>
+    </>
+  )
+}
+
 // insight 侧栏在 /skills 上的复用壳:与 /insight 用同一个自包含的 InsightSidebar
 // (自管宽度/拖拽/持久化 octo:insight:sidebar-width),故此处只摆布局、不重复 resize 逻辑。
 // 见 InsightPage 主体同款结构(pages/insight/index.tsx)。
@@ -374,6 +452,8 @@ function SkillsSidebarLayout(props: ParentProps) {
   const source = layout.sidebarSource.get()
   return source === "make"
     ? <MakeSidebarLayout>{props.children}</MakeSidebarLayout>
+     : source === "c2d"
+    ? <C2dSidebarLayout>{props.children}</C2dSidebarLayout>
      : source === "pattern"
     ? <PatternSidebarLayout>{props.children}</PatternSidebarLayout>
     : <InsightSidebarLayout>{props.children}</InsightSidebarLayout>
@@ -448,7 +528,7 @@ function FocusModeResetHandler() {
   const layout = useLayout()
 
   createEffect(() => {
-    if (!location.pathname.startsWith("/make")) {
+    if (!location.pathname.startsWith("/make") && !location.pathname.startsWith("/c2d")) {
       layout.focusMode.set(false)
     }
   })
@@ -485,6 +565,11 @@ function RouterInner(props: ParentProps<{ appChildren?: JSX.Element }>) {
     return p === "/make" || p.startsWith("/make/")
   }
 
+  const isC2dPage = () => {
+    const p = location.pathname
+    return p === "/c2d" || p.startsWith("/c2d/")
+  }
+
   const isPatternPage = () => {
     const p = location.pathname
     return p === "/pattern" || p.startsWith("/pattern/")
@@ -496,6 +581,7 @@ function RouterInner(props: ParentProps<{ appChildren?: JSX.Element }>) {
 
   // Whether skills is opened from make/pattern context (vs insight/cowork)
   const skillsFromMake = () => isSkillsPage() && sidebarSource() === "make"
+  const skillsFromC2d = () => isSkillsPage() && sidebarSource() === "c2d"
   const skillsFromPattern = () => isSkillsPage() && sidebarSource() === "pattern"
 
   return (
@@ -519,6 +605,14 @@ function RouterInner(props: ParentProps<{ appChildren?: JSX.Element }>) {
                     </Show>
                   </MakeSidebarLayout>
                 </Show>
+                {/* C2D + skills from c2d: 共用 C2dSidebarLayout */}
+                <Show when={isC2dPage() || skillsFromC2d()}>
+                  <C2dSidebarLayout>
+                    <Show when={isC2dPage()} fallback={<SkillsPage />}>
+                      {props.children}
+                    </Show>
+                  </C2dSidebarLayout>
+                </Show>
                 {/* Pattern + skills from pattern: 共用 PatternSidebarLayout */}
                 <Show when={isPatternPage() || skillsFromPattern()}>
                   <PatternSidebarLayout>
@@ -528,12 +622,12 @@ function RouterInner(props: ParentProps<{ appChildren?: JSX.Element }>) {
                   </PatternSidebarLayout>
                 </Show>
                 {/* Skills from insight/cowork: InsightSidebarLayout */}
-                <Show when={isSkillsPage() && !skillsFromMake() && !skillsFromPattern()}>
+                <Show when={isSkillsPage() && !skillsFromMake() && !skillsFromC2d() && !skillsFromPattern()}>
                   <InsightSidebarLayout>
                     <SkillsPage />
                   </InsightSidebarLayout>
                 </Show>
-                <Show when={!isInsightPage() && !isMakePage() && !isPatternPage() && !isSkillsPage()}>
+                <Show when={!isInsightPage() && !isMakePage() && !isC2dPage() && !isPatternPage() && !isSkillsPage()}>
                   {props.appChildren}
                   {props.children}
                 </Show>
@@ -743,6 +837,7 @@ export function AppInterface(props: {
                   {insightDevRoutesOrNone()}
                   <Route path="/insight/:id?" component={InsightPage} />
                   <Route path="/make/:id?" component={MakePage} />
+                  <Route path="/c2d/:id?" component={C2dPage} />
                   <Route path="/pattern/:id?" component={PatternPage} />
                   <Route path="/skills" component={SkillsPage} />
                   <Route path="/:dir" component={DirectoryLayout}>

@@ -14,6 +14,7 @@ type SkillsConfig = {
 const AGENT_INFO: Record<string, { label: string; subtitle: string }> = {
   octo_insight: { label: "Octo Insight", subtitle: "用户研究" },
   octo_make: { label: "Octo Make", subtitle: "原型生成" },
+  octo_c2d: { label: "Octo C2D", subtitle: "画布转设计" },
   octo_design: { label: "Octo Design", subtitle: "UI 设计" },
   octo_studio: { label: "Octo Studio", subtitle: "图片创作" },
   common: { label: "公共技能", subtitle: "适用于所有 Agent" },
