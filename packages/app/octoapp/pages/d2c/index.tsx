@@ -68,7 +68,7 @@ import { usePermission } from "@/context/permission"
 import { SessionPermissionDock } from "@/pages/session/composer/session-permission-dock"
 import { PlanEntryBanner } from "./components/result-viewer/plan-entry-banner"
 import { WebviewPanel, type WebviewPanelRef } from "./components/webview-panel"
-import { type WebviewToC2dMessage } from "./utils/webview-bridge"
+import { type WebviewToD2cMessage } from "./utils/webview-bridge"
 import { PlanBanner } from "./components/result-viewer/plan-banner"
 import { DesignSystemPicker } from "./components/design-system-picker"
 import { TemplatePicker } from "./components/template-picker"
@@ -82,10 +82,10 @@ import { ModelSelectorPopover } from "@/components/dialog-select-model"
 import { ANNOTATION_EVENT, type AnnotationEventDetail } from "./components/result-viewer/draw-overlay"
 import { scanDesignPlanFromMessages, isPlanConfirmed, isPlanIntentResolved } from "./utils/design-plan-scanner"
 import { scanStrategyFields, EMPTY_STRATEGY_FORM, type StrategyFormData } from "./utils/strategy-form-scanner"
-import { useC2dCommands } from "./use-make-commands"
+import { useD2cCommands } from "./use-make-commands"
 import { getDesktopApi } from "./lib/electron-api"
 
-export default function C2dPage() {
+export default function D2cPage() {
   const projectDir = useProjectDir({ mode: "project" })
   const params = useParams<{ id?: string }>()
   const navigate = useNavigate()
@@ -95,7 +95,7 @@ export default function C2dPage() {
   createEffect(() => {
     const dir = projectDir()
     if (lastProjectDir !== undefined && dir !== lastProjectDir && params.id) {
-      navigate("/c2d", { replace: true })
+      navigate("/d2c", { replace: true })
     }
     lastProjectDir = dir
   })
@@ -107,7 +107,7 @@ export default function C2dPage() {
           <SyncProvider>
             <LocalProvider>
               <Suspense fallback={<div class="size-full bg-background-base" />}>
-                <C2dContent />
+                <D2cContent />
               </Suspense>
             </LocalProvider>
           </SyncProvider>
@@ -119,7 +119,7 @@ export default function C2dPage() {
 
 let lastMakeDir: string | undefined
 
-function C2dContent() {
+function D2cContent() {
   const params = useParams<{ id?: string }>()
   const navigate = useNavigate()
   const command = useCommand()
@@ -136,15 +136,15 @@ function C2dContent() {
   const permission = usePermission()
 
   // Register Make slash commands
-  useC2dCommands()
+  useD2cCommands()
 
   // 切换项目目录只触发 keyed 重挂，不会自动改路由——url 仍停在旧目录的
-   // /c2d:oldId。这里用模块级变量检测"重挂 + 目录确实变了"，不依赖 store 水合时序。
+   // /d2c:oldId。这里用模块级变量检测"重挂 + 目录确实变了"，不依赖 store 水合时序。
   const prevMakeDir = lastMakeDir
   lastMakeDir = sdk.directory
   onMount(() => {
     if (prevMakeDir === undefined || prevMakeDir === sdk.directory || !params.id) return
-    navigate("/c2d", { replace: true })
+    navigate("/d2c", { replace: true })
   })
 
   onMount(() => { tracker.page({ module: "design", name: "design-page" }) })
@@ -152,7 +152,7 @@ function C2dContent() {
   const projectDir = useProjectDir()
 
   const local = useLocal()
-  useTabModel("c2d")
+  useTabModel("d2c")
   const currentModel = () => local.model.current()
 
   function findMultimodalModel() {
@@ -272,8 +272,8 @@ function C2dContent() {
       }
       void Promise.resolve(refetchSession()).then(() => setOverrideTitle(null))
     }
-    window.addEventListener("octo:c2d:session-renamed", handler)
-    onCleanup(() => window.removeEventListener("octo:c2d:session-renamed", handler))
+    window.addEventListener("octo:d2c:session-renamed", handler)
+    onCleanup(() => window.removeEventListener("octo:d2c:session-renamed", handler))
   })
 
   // 标题编辑状态
@@ -314,7 +314,7 @@ function C2dContent() {
     try {
       await sdk.client.session.delete({ sessionID })
       tracker.interaction({ module: "design", name: "delete-session" })
-      navigate("/c2d")
+      navigate("/d2c")
     } catch (err) {
       showToast({ title: "删除失败", description: err instanceof Error ? err.message : String(err) })
     }
@@ -341,7 +341,7 @@ function C2dContent() {
         const client = globalSDK.createClient({ directory: newDir })
         void client.session.list().then((result) => {
           const sessions = (result.data ?? []) as Session[]
-          const belongsToNewProject = sessions.some(s => s.id === currentId && s.agent === "octo_c2d")
+          const belongsToNewProject = sessions.some(s => s.id === currentId && s.agent === "octo_d2c")
           
           if (!belongsToNewProject) {
             // 清理旧 session 数据
@@ -359,10 +359,10 @@ function C2dContent() {
             setChildSessionIDs(new Set<string>())
             
             // 清除 lastSessionPerTab 记录，防止切换回来时恢复
-            layout.lastSessionPerTab.setC2d(sdk.directory, "")
+            layout.lastSessionPerTab.setD2c(sdk.directory, "")
             
             // 导航到空态
-            navigate("/c2d")
+            navigate("/d2c")
           }
         })
       },
@@ -379,7 +379,7 @@ const sessionMessagesLoaded = createMemo(() => {
       () => [params.id, sync.data.message?.[params.id ?? ""] === undefined] as const,
       ([id, missing], prev) => {
         if (id) {
-          layout.lastSessionPerTab.setC2d(sdk.directory, id)
+          layout.lastSessionPerTab.setD2c(sdk.directory, id)
           if (missing && id !== prev?.[0]) void sync.session.sync(id).catch(() => {})
         }
 
@@ -595,8 +595,8 @@ const sessionMessagesLoaded = createMemo(() => {
   const [deltaLog, setDeltaLog] = createSignal<DeltaLogEntry[]>([])
   const loadedChildSessions = new Set<string>()
 
-  const PLAN_CHILD_LOCALSTORAGE_PREFIX = "octo_c2d_plan_child:"
-  const PLAN_ENDED_LOCALSTORAGE_PREFIX = "octo_c2d_plan_ended:"
+  const PLAN_CHILD_LOCALSTORAGE_PREFIX = "octo_d2c_plan_child:"
+  const PLAN_ENDED_LOCALSTORAGE_PREFIX = "octo_d2c_plan_ended:"
 
   /** 当前活跃的设计规划子 session ID（存在时表示正在规划阶段） */
   const [activePlanSessionId, setActivePlanSessionId] = createSignal<string | null>(null)
@@ -647,7 +647,7 @@ const sessionMessagesLoaded = createMemo(() => {
   })
 
   /**
-   * 跨重启恢复：从 API 全量拉取 session 列表，找到当前主 session 的 octo_c2d_plan 子 session。
+   * 跨重启恢复：从 API 全量拉取 session 列表，找到当前主 session 的 octo_d2c_plan 子 session。
    * sync.data.session 只包含根 session（roots:true），子 session 不会出现在里面，
    * 所以需要额外从 API 拉取全量 session 列表来检测。
    */
@@ -657,7 +657,7 @@ const sessionMessagesLoaded = createMemo(() => {
     try {
       const res = await sdk.client.session.list({ directory: sdk.directory })
       const sessions = (res.data ?? []).filter((s: any) => !!s?.id)
-      const child = sessions.find((s: any) => s.parentID === sid && s.agent === "octo_c2d_plan" && !s.time?.archived)
+      const child = sessions.find((s: any) => s.parentID === sid && s.agent === "octo_d2c_plan" && !s.time?.archived)
       if (child) {
         setHasChildPlanSession(true)
         return child.id
@@ -898,17 +898,17 @@ const sessionMessagesLoaded = createMemo(() => {
     setSkillsLoading(true)
 
     try {
-      const platformSkills = await loadSkillsFromPanel("octo_c2d")
+      const platformSkills = await loadSkillsFromPanel("octo_d2c")
       const customSkills = await loadSkillsFromPanel("common")
       
       setSkillConfig({
         panel: {
-          octo_c2d: platformSkills,
+          octo_d2c: platformSkills,
           common: customSkills
         }
       })
     } catch (err) {
-      console.error("[C2dPage] Failed to load skill config:", err)
+      console.error("[D2cPage] Failed to load skill config:", err)
     } finally {
       setSkillsLoading(false)
     }
@@ -978,10 +978,10 @@ const sessionMessagesLoaded = createMemo(() => {
     )
   })
 
-  // Get active skills from panel.octo_c2d array
+  // Get active skills from panel.octo_d2c array
   const activeSkills = createMemo(() => {
     const config = skillConfig()
-    const panelSkills = config.panel?.octo_c2d ?? []
+    const panelSkills = config.panel?.octo_d2c ?? []
 
     return panelSkills
       .filter(skill => skill.enable !== false)
@@ -992,8 +992,8 @@ const sessionMessagesLoaded = createMemo(() => {
       }))
   })
 
-  const DS_KEY_PREFIX = "octo:c2d:design-system:"
-  const PROMPT_KEY_PREFIX = "octo:c2d:prompt:"
+  const DS_KEY_PREFIX = "octo:d2c:design-system:"
+  const PROMPT_KEY_PREFIX = "octo:d2c:prompt:"
   const dsKey = () => params.id ? DS_KEY_PREFIX + params.id : null
   const [selectedDesignSystem, setSelectedDesignSystem] = createSignal<string | null>(null)
   createEffect(() => {
@@ -1061,13 +1061,13 @@ const sessionMessagesLoaded = createMemo(() => {
   let webviewPanelRef: WebviewPanelRef | undefined
 
   function handleWebviewMessage(data: unknown) {
-    const msg = data as WebviewToC2dMessage
+    const msg = data as WebviewToD2cMessage
     if (msg.type === "send-message") {
       const sid = params.id
       const key = activeModelKey()
       if (sid && key && msg.text) {
         sendMessage(sid, msg.text, key).catch((err) => {
-          console.error("[C2dPage] webview send-message failed", err)
+          console.error("[D2cPage] webview send-message failed", err)
         })
       }
     }
@@ -1202,7 +1202,7 @@ const sessionMessagesLoaded = createMemo(() => {
     const data = strategyFormData()
     const prompt = `[strategy-complete]\n\n以下是已填写的设计策略信息：\n\n## 设计需求\n- 需求背景：${data.需求背景 || "（未填写）"}\n- 设计目标：${data.设计目标 || "（未填写）"}\n- 设计方法：${data.设计方法 || "（未填写）"}\n- 其他：${data.其他 || "（未填写）"}\n\n## 洞察&研究\n- 用户画像：${data.用户画像 || "（未填写）"}\n- 用户旅程：${data.用户旅程 || "（未填写）"}\n- 研究报告：${data.研究报告 || "（未填写）"}\n\n请根据以上信息输出完整的设计策略文档。`
     sendMessage(planSid, prompt, key).catch((err) => {
-      console.error("[C2dPage] generate strategy failed", err)
+      console.error("[D2cPage] generate strategy failed", err)
       setIsGenerating(false)  // 失败时恢复
       setPlanPhase("strategy")  // 失败时回滚到策略准备阶段
     })
@@ -1229,7 +1229,7 @@ const sessionMessagesLoaded = createMemo(() => {
 
     // 只向主 session 发送确认指令，通知主 agent 设计规划已完成，开始生成 HTML
     sendMessage(mainSid, cmd, modelKey).catch((err) => {
-      console.error("[C2dPage] confirm plan to main session failed", err)
+      console.error("[D2cPage] confirm plan to main session failed", err)
     })
 
     // 清理子 session 状态，保留子 session 的记录（不清理 childSessionIDs）
@@ -1301,7 +1301,7 @@ const sessionMessagesLoaded = createMemo(() => {
     if (phase2Pending()) return false
     // 如果已存在活跃的规划子 session（切回时恢复的），不显示 banner
     if (activePlanSessionId()) return false
-    // 如果已存在 octo_c2d_plan 子 session（跨重启恢复），不显示 banner
+    // 如果已存在 octo_d2c_plan 子 session（跨重启恢复），不显示 banner
     if (hasChildPlanSession()) return false
     // 如果用户已结束该 session 的设计规划,不显示 banner
     if (planEndedForSession() === sid) return false
@@ -1318,7 +1318,7 @@ const sessionMessagesLoaded = createMemo(() => {
     if (pending) setOptimisticIntentResolved(false)
   }, { defer: true }))
 
-  /** 用户点 [进入] → 创建子 session (octo_c2d_plan),启动设计规划流程 */
+  /** 用户点 [进入] → 创建子 session (octo_d2c_plan),启动设计规划流程 */
   async function handleEnterPlan() {
     const sid = params.id
     const modelKey = activeModelKey()
@@ -1351,7 +1351,7 @@ const sessionMessagesLoaded = createMemo(() => {
       const result = await sdk.client.session.create({
         directory: dir,
         parentID: sid,
-        agent: "octo_c2d_plan",
+        agent: "octo_d2c_plan",
       })
       const childSession = result.data as Session | undefined
       if (!childSession) throw new Error("Failed to create plan session")
@@ -1371,22 +1371,22 @@ const sessionMessagesLoaded = createMemo(() => {
 
       // 5. 同步子 session 数据并发送 prompt
       sync.session.sync(childSession.id).catch((err: any) => {
-        console.warn("[C2dPage] sync child session failed", err)
+        console.warn("[D2cPage] sync child session failed", err)
       })
 
       if (modelKey) {
         sdk.client.session.prompt({
           sessionID: childSession.id,
-          agent: "octo_c2d_plan",
+          agent: "octo_d2c_plan",
           model: modelKey,
           parts: [{ type: "text", text: initialPrompt }],
         }).catch((err: any) => {
-          console.error("[C2dPage] prompt child agent failed", err)
+          console.error("[D2cPage] prompt child agent failed", err)
           setOptimisticIntentResolved(false)
         })
       }
     } catch (err) {
-      console.error("[C2dPage] enter plan failed", err)
+      console.error("[D2cPage] enter plan failed", err)
       setOptimisticIntentResolved(false)
     }
   }
@@ -1399,7 +1399,7 @@ const sessionMessagesLoaded = createMemo(() => {
     if (optimisticIntentResolved()) return
     setOptimisticIntentResolved(true)
     sendMessage(sid, "[skip-plan]", modelKey).catch((err) => {
-      console.error("[C2dPage] skip plan failed", err)
+      console.error("[D2cPage] skip plan failed", err)
       setOptimisticIntentResolved(false)
     })
   }
@@ -1413,7 +1413,7 @@ const sessionMessagesLoaded = createMemo(() => {
     () => [params.id, sync.data.session] as const,
     ([newSid, allSessions], prev) => {
       const prevSid = prev?.[0] ?? null
-      // 导航到 /c2d（无 session）时清除规划状态,防止泄漏到新会话
+      // 导航到 /d2c（无 session）时清除规划状态,防止泄漏到新会话
       if (!newSid) {
         if (prevSid) {
           setActivePlanSessionId(null)
@@ -1452,7 +1452,7 @@ const sessionMessagesLoaded = createMemo(() => {
       // 只恢复非归档的活跃子 session
       if (allSessions) {
         for (const s of allSessions) {
-          if ((s as any).parentID === newSid && (s as any).agent === "octo_c2d_plan" && !(s as any).time?.archived) {
+          if ((s as any).parentID === newSid && (s as any).agent === "octo_d2c_plan" && !(s as any).time?.archived) {
             loadedChildSessions.add(s.id)
             setChildSessionIDs((prev) => { const next = new Set(prev); next.add(s.id); return next })
             sync.session.sync(s.id).catch(() => {})
@@ -1653,20 +1653,20 @@ const sessionMessagesLoaded = createMemo(() => {
   /** 创建新 session 并导航 */
   async function createAndNavigate(): Promise<string | undefined> {
     const dir = sdk.directory
-    console.log("[C2dPage] createAndNavigate dir:", dir)
+    console.log("[D2cPage] createAndNavigate dir:", dir)
     if (!dir) return
     setSending(true)
     try {
-      const result = await sdk.client.session.create({ directory: dir, agent: "octo_c2d" })
+      const result = await sdk.client.session.create({ directory: dir, agent: "octo_d2c" })
       const session = result.data as Session | undefined
-      console.log("[C2dPage] session created:", { id: session?.id, agent: session?.agent, directory: session?.directory })
+      console.log("[D2cPage] session created:", { id: session?.id, agent: session?.agent, directory: session?.directory })
       if (session) {
         tracker.interaction({ module: "design", name: "new-session" })
-        navigate(`/c2d/${session.id}`)
+        navigate(`/d2c/${session.id}`)
         return session.id
       }
     } catch (err) {
-      console.error("[C2dPage] session.create failed", err)
+      console.error("[D2cPage] session.create failed", err)
     } finally {
       setSending(false)
     }
@@ -1778,12 +1778,12 @@ const sessionMessagesLoaded = createMemo(() => {
               sessionID: sessionId,
               command: seg.cmd,
               arguments: seg.args,
-              agent: sessionId === activePlanSessionId() ? "octo_c2d_plan" : "octo_c2d",
+              agent: sessionId === activePlanSessionId() ? "octo_d2c_plan" : "octo_d2c",
               model: modelStr,
               parts: cmdParts.length > 0 ? cmdParts : undefined,
             })
           } catch (err) {
-            console.error(`[C2dPage] command /${seg.cmd} failed`, err)
+            console.error(`[D2cPage] command /${seg.cmd} failed`, err)
           }
         }
 
@@ -1821,7 +1821,7 @@ const sessionMessagesLoaded = createMemo(() => {
         try {
           const ds = await loadDesignSystem(dsId)
           if (!ds.design && !ds.tokens) {
-            console.warn("[C2dPage] design system loaded but empty:", dsId)
+            console.warn("[D2cPage] design system loaded but empty:", dsId)
           }
           dsPrefix = [
             `[Design System: ${dsId}]`,
@@ -1846,7 +1846,7 @@ const sessionMessagesLoaded = createMemo(() => {
             "---",
           ].join("\n")
         } catch (err) {
-          console.error("[C2dPage] design system load failed", err)
+          console.error("[D2cPage] design system load failed", err)
         }
 
         // Craft document injection (design quality guides)
@@ -1863,7 +1863,7 @@ const sessionMessagesLoaded = createMemo(() => {
             ].join("\n")
           }
         } catch (err) {
-          console.error("[C2dPage] craft load failed", err)
+          console.error("[D2cPage] craft load failed", err)
         }
 
         if (dsPrefix) {
@@ -1915,14 +1915,11 @@ const sessionMessagesLoaded = createMemo(() => {
 
       // resourceLibrary skill injection: 告诉 agent resourceLibrary skill 的使用方式。
       // 每轮注入,确保 agent 始终知道如何获取视觉资源。
+      // 注意：不再注入 glob/read 步骤，因为会触发 external_directory 权限弹窗。
+      // 当 resourceLibrary skill 实际可用时，通过 skill 工具调用即可。
       const resourceLibraryPrefix = [
         `[Resource Library]`,
         `当需要图标、插画、图片等视觉资源时，如果用户未指定来源，且如果存在resourceLibrary这个skill，必须使用 resourceLibrary skill 来获取这些资源。`,
-        `resourceLibrary 不在 available_skills 列表中，是一个独立路径的 skill，不能通过 skill 工具调用。`,
-        `使用方式：`,
-        `1. 用 glob 工具查找 SKILL.md：glob path="~/.config/octo" pattern="**/resourceLibraryScript/resourceLibrary/SKILL.md"`,
-        `   （~ 表示用户主目录，Windows 上通常是 C:\\Users\\{用户名}）`,
-        `2. 用 read 工具读取找到的 SKILL.md 文件，严格按照文件中的说明执行获取资源流程。`,
         `---`,
       ].join("\n")
       promptText = resourceLibraryPrefix + "\n" + promptText
@@ -1961,13 +1958,13 @@ const sessionMessagesLoaded = createMemo(() => {
       
       await sdk.client.session.prompt({
         sessionID: sessionId,
-        agent: sessionId === activePlanSessionId() ? "octo_c2d_plan" : "octo_c2d",
+        agent: sessionId === activePlanSessionId() ? "octo_d2c_plan" : "octo_d2c",
         ...(modelKey ? { model: modelKey } : {}),
         parts,
       })
       setAttachments([])
     } catch (err) {
-      console.error("[C2dPage] prompt failed", err)
+      console.error("[D2cPage] prompt failed", err)
       setAttachments([])
     }
   }
@@ -2010,7 +2007,7 @@ const sessionMessagesLoaded = createMemo(() => {
       if (!sid) {
         const dir = sdk.directory
         if (!dir) return
-const result = await sdk.client.session.create({ directory: dir, agent: "octo_c2d" })
+const result = await sdk.client.session.create({ directory: dir, agent: "octo_d2c" })
       const session = result.data as Session | undefined
       if (!session) return
       
@@ -2022,7 +2019,7 @@ if (dsId) {
           localStorage.setItem(DS_KEY_PREFIX + session.id, dsId)
         }
         sendingNavigation = true
-        navigate(`/c2d/${session.id}`)
+        navigate(`/d2c/${session.id}`)
         sid = session.id
       }
       await sendMessage(sid, messageText, capturedModelKey, mentions)
@@ -2036,7 +2033,7 @@ if (dsId) {
         })
       }
     } catch (err) {
-      console.error("[C2dPage] handleSubmit failed", err)
+      console.error("[D2cPage] handleSubmit failed", err)
     } finally {
       // 重置 sending：如果是主 session 或 plan 子 session 且未切换，则允许重置
       if (!submitSessionId || params.id === submitSessionId || (planSid && activePlanSessionId() === planSid)) {
@@ -2400,7 +2397,7 @@ if (dsId) {
         
         const buffer = await file.arrayBuffer()
         const sep = projectDirValue.includes("\\") ? "\\" : "/"
-        const tempPath = [projectDirValue, ".octo", "tmps", "c2d", "uploads", file.name].join(sep)
+        const tempPath = [projectDirValue, ".octo", "tmps", "d2c", "uploads", file.name].join(sep)
         
         await api.writeFileBuffer(tempPath, buffer)
         
@@ -2621,7 +2618,7 @@ if (dsId) {
       .respond({ sessionID: perm.sessionID, permissionID: perm.id, response })
       .catch((err: unknown) => {
         const description = err instanceof Error ? err.message : String(err)
-        console.error("[C2dPage] permission respond failed:", description)
+        console.error("[D2cPage] permission respond failed:", description)
       })
       .finally(() => {
         setPermissionResponding(false)

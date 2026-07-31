@@ -33,13 +33,13 @@ function joinPath(base: string, relative: string): string {
   return normalizedBase + "/" + normalizedRelative
 }
 
-export interface CreateC2DZipOptions {
+export interface CreateD2CZipOptions {
   htmlContent: string
   htmlFilePath: string
   tabTitle: string
 }
 
-export async function createC2DZip(options: CreateC2DZipOptions): Promise<Blob> {
+export async function createD2CZip(options: CreateD2CZipOptions): Promise<Blob> {
   const outerZip = new JSZip()
 
   const htmlZip = new JSZip()
@@ -64,12 +64,12 @@ export async function createC2DZip(options: CreateC2DZipOptions): Promise<Blob> 
                 htmlZip.file(file.path, new Uint8Array(buffer))
               }
             } catch (err) {
-              console.warn(`[C2D] Failed to read sibling file:`, file.path, err)
+              console.warn(`[D2C] Failed to read sibling file:`, file.path, err)
             }
           }
         }
       } catch (err) {
-        console.warn('[C2D] Failed to list directory:', err)
+        console.warn('[D2C] Failed to list directory:', err)
       }
     }
   }
@@ -79,14 +79,14 @@ export async function createC2DZip(options: CreateC2DZipOptions): Promise<Blob> 
   outerZip.folder("data")?.file("html.zip", new Uint8Array(htmlZipBytes))
 
   const manifest = {
-    name: "octo-c2d",
+    name: "octo-d2c",
     version: "1.0.0",
     frames: [{
       name: options.tabTitle,
       filePath: "./data/html.zip"
     }]
   }
-  outerZip.file("octo-c2d.json", JSON.stringify(manifest, null, 2))
+  outerZip.file("octo-d2c.json", JSON.stringify(manifest, null, 2))
 
   return await outerZip.generateAsync({ type: "blob" })
 }

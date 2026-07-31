@@ -85,7 +85,7 @@ const CAPTURE_SCRIPT = `(async function() {
   // 3. Clone DOM — keep everything EXCEPT scripts/icons/base
   var clone = document.documentElement.cloneNode(true);
 
-  // Tag recognized components with OCTO_C2D_ID
+  // Tag recognized components with OCTO_D2C_ID
   var PIXSO_COMPS = ['Button','Badge','Dropdown','Menu','Input','InputNumber','Steps','Checkbox','CheckboxGroup','Select','Tabs','Tag','Switch','Carousel','Collapse','Divider','Segmented','Timeline','Tree','Datepicker','Timepicker','Breadcrumb','RadioGroup','Rate','Slider','Progress','Textarea','PieChart', 'BarChart','ProcessChart', 'BubbleChart', 'ScatterChart', 'FunnelChart','RadarChart', 'GaugeChart', 'HillChart', 'BulletChart', 'CircleProcessChart','AssembleBubbleChart', 'JadeJueChart', 'LineChart'];
   function tagComponents(node) {
     if (node.nodeType !== 1) return;
@@ -93,9 +93,9 @@ const CAPTURE_SCRIPT = `(async function() {
     if (ct && PIXSO_COMPS.indexOf(ct) !== -1) {
       var id = node.getAttribute('id') || '';
       var cls = node.getAttribute('class') || '';
-      node.setAttribute('class', cls + ' OCTO_C2D_ID_' + id);
+      node.setAttribute('class', cls + ' OCTO_D2C_ID_' + id);
       if(node.getAttribute('id')) {
-        node.setAttribute('id', 'OCTO_C2D_ID_' + id);
+        node.setAttribute('id', 'OCTO_D2C_ID_' + id);
       }
     }
     for (var i = 0; i < node.children.length; i++) tagComponents(node.children[i]);

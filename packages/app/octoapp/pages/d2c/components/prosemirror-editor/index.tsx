@@ -12,7 +12,7 @@ import { atomKeymap } from "./plugins/atom-keymap"
 import { createSlashTriggerPlugin, slashTriggerKey, type SlashTriggerState } from "./plugins/slash-trigger"
 import { MentionPopover, type MentionSelection } from "../mention-popover"
 import type { PanelSkill } from "../skill-config-types"
-import type { ArtifactFile } from "@/pages/c2d/utils/artifact-file-api"
+import type { ArtifactFile } from "@/pages/d2c/utils/artifact-file-api"
 import "./styles.css"
 
 interface EditorRef {
@@ -25,7 +25,7 @@ interface EditorRef {
 
 interface Props {
   sessionId: string
-  skillConfig: { panel?: { common?: PanelSkill[]; octo_c2d?: PanelSkill[] } }
+  skillConfig: { panel?: { common?: PanelSkill[]; octo_d2c?: PanelSkill[] } }
   artifactFiles: { generated: ArtifactFile[]; uploaded: ArtifactFile[] } | null | undefined
   mentionSelections: MentionSelection[]
   setMentionSelections: (selections: MentionSelection[]) => void

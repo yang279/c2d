@@ -10,7 +10,7 @@ const withCategory = (category: string) => {
   })
 }
 
-export function useC2dCommands() {
+export function useD2cCommands() {
   const command = useCommand()
   const language = useLanguage()
   const navigate = useNavigate()
@@ -19,14 +19,14 @@ export function useC2dCommands() {
 
   const commands = () => [
     sessionCommand({
-      id: "c2d.new",
+      id: "d2c.new",
       title: language.t("command.session.new"),
       slash: "new",
-      onSelect: () => navigate("/c2d"),
+      onSelect: () => navigate("/d2c"),
     }),
 
     sessionCommand({
-      id: "c2d.undo",
+      id: "d2c.undo",
       title: language.t("command.session.undo"),
       slash: "undo",
       onSelect: () => {
@@ -34,7 +34,7 @@ export function useC2dCommands() {
     }),
 
     sessionCommand({
-      id: "c2d.redo",
+      id: "d2c.redo",
       title: language.t("command.session.redo"),
       slash: "redo",
       onSelect: () => {
@@ -42,7 +42,7 @@ export function useC2dCommands() {
     }),
 
     sessionCommand({
-      id: "c2d.compact",
+      id: "d2c.compact",
       title: language.t("command.session.compact"),
       slash: "compact",
       onSelect: () => {
@@ -50,7 +50,7 @@ export function useC2dCommands() {
     }),
 
     sessionCommand({
-      id: "c2d.agent",
+      id: "d2c.agent",
       title: language.t("command.agent.choose"),
       slash: "agent",
       onSelect: () => {
@@ -58,7 +58,7 @@ export function useC2dCommands() {
     }),
 
     sessionCommand({
-      id: "c2d.mcp",
+      id: "d2c.mcp",
       title: language.t("command.mcp.settings"),
       slash: "mcp",
       onSelect: () => {
@@ -66,5 +66,5 @@ export function useC2dCommands() {
     }),
   ]
 
-  command.register("c2d", commands)
+  command.register("d2c", commands)
 }

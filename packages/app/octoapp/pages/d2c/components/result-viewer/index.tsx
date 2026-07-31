@@ -28,7 +28,7 @@ import { artifactFileToOutputCard, type ArtifactFile, getArtifactRelativePath } 
 import { saveArtifactContent } from "../../utils/artifact-auto-save"
 import type { OutputCard } from "../insight-turn"
 import { tracker } from "@/utils/tracker"
-import { createC2DZip } from "../../utils/canvas-to-design"
+import { createD2CZip } from "../../utils/canvas-to-design"
 import { uploadZip } from "@/utils/useZipTransport"
 import { useProjectSelection } from "@/hooks/use-project-selection"
 
@@ -150,12 +150,12 @@ export function ResultViewer(props: {
       if (!isLoggedIn) {
         showToast({ title: "生成ZIP文件..." })
         const htmlContent = extractCodeBlock(tab.content, "html")
-        const zipBlob = await createC2DZip({
+        const zipBlob = await createD2CZip({
           htmlContent,
           htmlFilePath: tab.filePath || "",
           tabTitle: tab.title
         })
-        const fileName = `${tab.title}-c2d.zip`
+        const fileName = `${tab.title}-d2c.zip`
         const url = URL.createObjectURL(zipBlob)
         const a = document.createElement("a")
         a.href = url
@@ -171,7 +171,7 @@ export function ResultViewer(props: {
       const result = await uploadZip(async () => {
         showToast({ title: "生成ZIP文件..." })
         const htmlContent = extractCodeBlock(tab.content, "html")
-        return await createC2DZip({
+        return await createD2CZip({
           htmlContent,
           htmlFilePath: tab.filePath || "",
           tabTitle: tab.title

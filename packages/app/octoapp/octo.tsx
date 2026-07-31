@@ -57,7 +57,7 @@ import { insightDevRoutes } from "@/pages/insight/__dev/routes"
 import { installConsoleObjectSerializer } from "@/pages/insight/lib/console-serialize"
 if (!import.meta.env.DEV) installConsoleObjectSerializer()
 import { MakeSidebar } from "@/pages/make/sidebar"
-import { C2dSidebar } from "@/pages/c2d/sidebar"
+import { D2cSidebar } from "@/pages/d2c/sidebar"
 import { PatternSidebar } from "@/pages/pattern/modules/sidebar/sidebar"
 import { InsightSidebar } from "@/pages/insight/sidebar"
 import { InsightQueueRunner } from "@/pages/insight/queue-runner"
@@ -77,7 +77,7 @@ import { persisted, Persist } from "@/utils/persist"
 const ChatPage = lazy(() => import("@/pages/chat"))
 const InsightPage = lazy(() => import("@/pages/insight"))
 const MakePage = lazy(() => import("@/pages/make"))
-const C2dPage = lazy(() => import("@/pages/c2d"))
+const D2cPage = lazy(() => import("@/pages/d2c"))
 const PatternPage = lazy(() => import("@/pages/pattern"))
 const SkillsPage = lazy(() => import("@/pages/skills"))
 const StudioPage = lazy(() => import("@/pages/studio/index"))
@@ -286,10 +286,10 @@ function MakeSidebarLayout(props: ParentProps) {
   )
 }
 
-function C2dSidebarLayout(props: ParentProps) {
+function D2cSidebarLayout(props: ParentProps) {
   return (
     <MakeLayoutProvider>
-      <C2dSidebarArea>{props.children}</C2dSidebarArea>
+      <D2cSidebarArea>{props.children}</D2cSidebarArea>
     </MakeLayoutProvider>
   )
 }
@@ -362,7 +362,7 @@ function MakeSidebarArea(props: ParentProps) {
   )
 }
 
-function C2dSidebarArea(props: ParentProps) {
+function D2cSidebarArea(props: ParentProps) {
   const ml = useMakeLayout()
   const layout = useLayout()
   const focusMode = layout.focusMode.get
@@ -419,7 +419,7 @@ function C2dSidebarArea(props: ParentProps) {
           classList={{ "is-collapsed": ml.leftCollapsed() || focusMode() }}
           style={{ "border-right": "1px solid var(--border-weak-base)", background: "linear-gradient(166deg, #ffffff 0%, #fdfeff 48%, #e9f5ff 99%)" }}
         >
-          <C2dSidebar />
+          <D2cSidebar />
         </div>
         <Show when={!ml.leftCollapsed() && !focusMode()}>
           <div class="make-sidebar-resize" style={{ left: `${ml.leftW() - 4}px` }} onMouseDown={handleResize} />
@@ -452,8 +452,8 @@ function SkillsSidebarLayout(props: ParentProps) {
   const source = layout.sidebarSource.get()
   return source === "make"
     ? <MakeSidebarLayout>{props.children}</MakeSidebarLayout>
-     : source === "c2d"
-    ? <C2dSidebarLayout>{props.children}</C2dSidebarLayout>
+     : source === "d2c"
+    ? <D2cSidebarLayout>{props.children}</D2cSidebarLayout>
      : source === "pattern"
     ? <PatternSidebarLayout>{props.children}</PatternSidebarLayout>
     : <InsightSidebarLayout>{props.children}</InsightSidebarLayout>
@@ -528,7 +528,7 @@ function FocusModeResetHandler() {
   const layout = useLayout()
 
   createEffect(() => {
-    if (!location.pathname.startsWith("/make") && !location.pathname.startsWith("/c2d")) {
+    if (!location.pathname.startsWith("/make") && !location.pathname.startsWith("/d2c")) {
       layout.focusMode.set(false)
     }
   })
@@ -565,9 +565,9 @@ function RouterInner(props: ParentProps<{ appChildren?: JSX.Element }>) {
     return p === "/make" || p.startsWith("/make/")
   }
 
-  const isC2dPage = () => {
+  const isD2cPage = () => {
     const p = location.pathname
-    return p === "/c2d" || p.startsWith("/c2d/")
+    return p === "/d2c" || p.startsWith("/d2c/")
   }
 
   const isPatternPage = () => {
@@ -581,7 +581,7 @@ function RouterInner(props: ParentProps<{ appChildren?: JSX.Element }>) {
 
   // Whether skills is opened from make/pattern context (vs insight/cowork)
   const skillsFromMake = () => isSkillsPage() && sidebarSource() === "make"
-  const skillsFromC2d = () => isSkillsPage() && sidebarSource() === "c2d"
+  const skillsFromD2c = () => isSkillsPage() && sidebarSource() === "d2c"
   const skillsFromPattern = () => isSkillsPage() && sidebarSource() === "pattern"
 
   return (
@@ -605,13 +605,13 @@ function RouterInner(props: ParentProps<{ appChildren?: JSX.Element }>) {
                     </Show>
                   </MakeSidebarLayout>
                 </Show>
-                {/* C2D + skills from c2d: 共用 C2dSidebarLayout */}
-                <Show when={isC2dPage() || skillsFromC2d()}>
-                  <C2dSidebarLayout>
-                    <Show when={isC2dPage()} fallback={<SkillsPage />}>
+                {/* D2C + skills from d2c: 共用 D2cSidebarLayout */}
+                <Show when={isD2cPage() || skillsFromD2c()}>
+                  <D2cSidebarLayout>
+                    <Show when={isD2cPage()} fallback={<SkillsPage />}>
                       {props.children}
                     </Show>
-                  </C2dSidebarLayout>
+                  </D2cSidebarLayout>
                 </Show>
                 {/* Pattern + skills from pattern: 共用 PatternSidebarLayout */}
                 <Show when={isPatternPage() || skillsFromPattern()}>
@@ -622,12 +622,12 @@ function RouterInner(props: ParentProps<{ appChildren?: JSX.Element }>) {
                   </PatternSidebarLayout>
                 </Show>
                 {/* Skills from insight/cowork: InsightSidebarLayout */}
-                <Show when={isSkillsPage() && !skillsFromMake() && !skillsFromC2d() && !skillsFromPattern()}>
+                <Show when={isSkillsPage() && !skillsFromMake() && !skillsFromD2c() && !skillsFromPattern()}>
                   <InsightSidebarLayout>
                     <SkillsPage />
                   </InsightSidebarLayout>
                 </Show>
-                <Show when={!isInsightPage() && !isMakePage() && !isC2dPage() && !isPatternPage() && !isSkillsPage()}>
+                <Show when={!isInsightPage() && !isMakePage() && !isD2cPage() && !isPatternPage() && !isSkillsPage()}>
                   {props.appChildren}
                   {props.children}
                 </Show>
@@ -837,7 +837,7 @@ export function AppInterface(props: {
                   {insightDevRoutesOrNone()}
                   <Route path="/insight/:id?" component={InsightPage} />
                   <Route path="/make/:id?" component={MakePage} />
-                  <Route path="/c2d/:id?" component={C2dPage} />
+                  <Route path="/d2c/:id?" component={D2cPage} />
                   <Route path="/pattern/:id?" component={PatternPage} />
                   <Route path="/skills" component={SkillsPage} />
                   <Route path="/:dir" component={DirectoryLayout}>

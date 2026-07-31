@@ -13,7 +13,7 @@ export type SkillConfig = {
   agent?: Record<string, string[]>
   panel?: {
     octo_insight?: PanelSkill[]
-    octo_c2d?: PanelSkill[]
+    octo_d2c?: PanelSkill[]
     octo_studio?: PanelSkill[]
     common?: PanelSkill[]
   }

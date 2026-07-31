@@ -21,7 +21,7 @@ interface MentionPopoverProps {
   skillConfig: {
     panel?: {
       common?: PanelSkill[]
-      octo_c2d?: PanelSkill[]
+      octo_d2c?: PanelSkill[]
     }
   }
   artifactFiles: { generated: ArtifactFile[]; uploaded: ArtifactFile[] } | null | undefined
@@ -63,7 +63,7 @@ export function MentionPopover(props: MentionPopoverProps): JSX.Element {
     if (!panel) return []
     
     const commonLabels = new Set((panel.common ?? []).map(s => s.label))
-    return (panel.octo_c2d ?? []).filter(s => !commonLabels.has(s.label))
+    return (panel.octo_d2c ?? []).filter(s => !commonLabels.has(s.label))
   })
 
   const customSkills = createMemo(() => {

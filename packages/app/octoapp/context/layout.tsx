@@ -54,7 +54,7 @@ type TabHandoff = {
 type LastSessionPerTab = {
   cowork?: { id: string }
   make: Record<string, string>
-  c2d: Record<string, string>
+  d2c: Record<string, string>
   chat: Record<string, string>
   studio: Record<string, string>
   pattern?: { id: string }
@@ -62,7 +62,7 @@ type LastSessionPerTab = {
   newConversation: Record<string, boolean>
 }
 
-type SidebarSource = "cowork" | "make" | "pattern" | "c2d"
+type SidebarSource = "cowork" | "make" | "pattern" | "d2c"
 
 export type LocalProject = Partial<Project> & { worktree: string; expanded: boolean }
 
@@ -279,7 +279,7 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
     const [lastSessionPerTab, setLastSession] = createStore<LastSessionPerTab>({
       cowork: undefined,
       make: {},
-      c2d: {},
+      d2c: {},
       chat: {},
       studio: {},
       pattern: undefined,
@@ -603,9 +603,9 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         setMake(dir: string, id: string) {
           setLastSession("make", dir, id)
         },
-        c2d: (dir: string) => lastSessionPerTab.c2d[dir],
-        setC2d(dir: string, id: string) {
-          setLastSession("c2d", dir, id)
+        d2c: (dir: string) => lastSessionPerTab.d2c[dir],
+        setD2c(dir: string, id: string) {
+          setLastSession("d2c", dir, id)
         },
         pattern: createMemo(() => lastSessionPerTab.pattern),
         setPattern(id: string) {

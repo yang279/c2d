@@ -8,7 +8,7 @@ export interface ArtifactSnapshot {
   label?: string
 }
 
-const STORAGE_PREFIX = "octo:c2d:snapshots:"
+const STORAGE_PREFIX = "octo:d2c:snapshots:"
 const MAX_SNAPSHOTS_PER_FILE = 5
 
 function getKey(sessionId: string): string {
